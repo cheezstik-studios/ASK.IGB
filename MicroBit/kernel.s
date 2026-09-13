@@ -20,10 +20,17 @@ help_command:
     .asciz "help"
 
 help_text:
-    .asciz "COMMAND : FUNCTION\nhelp : displays a list of commands\necho <string> : prints the <string> to the terminal"
+    .asciz "COMMAND       : FUNCTION\nhelp          : Displays a list of commands.\necho <string> : Prints <string> to the terminal.\nshutdown      : Prepares the system for power loss. The shell will lock until power is restored."
 
 echo_command:
-    .asciz "echo"
+	.asciz "echo"
+
+shutdown_command:
+	.asciz "shutdown"
+	
+shutdown_text: 
+	.asciz "ARE YOU SURE YOU WOULD LIKE TO SHUT DOWN (Y/N) "
+	.asciz "\nSystem ready for power removal."
 
 .align 2
 commands:
@@ -31,6 +38,8 @@ commands:
     .word do_help + 1
     .word echo_command
     .word do_echo + 1
+	.word shutdown_command
+	.word do_shutdown + 1
 
     .word 0xDEADBEEF
 
@@ -45,6 +54,22 @@ do_echo:
     adds r4, #1
     bl puts
     b shell
+	
+do_shutdown:
+	ldr r4, =shutdown_text
+	bl puts
+	bl getc
+	cmp r1, #89
+	beq shutdown_y
+	cmp r1, #121
+	beq shutdown_y
+	bl putc
+	b shell
+shutdown_y:
+	bl putc
+	adds r4, #1
+	bl puts
+	
 
 str_eq:
     ldrb r0, [r4]
@@ -116,7 +141,10 @@ puts:
 
 return:
     bx lr
-
+	
+halt:
+	b halt
+	
 reset_handler:
     @ Enable UART
     ldr r0, =0x40002500
@@ -152,7 +180,7 @@ shell:
     movs r1, #62
     bl putc
 
-    movs r1, $32
+    movs r1, #32
     bl putc
 
 type:
