@@ -20,12 +20,17 @@ help_command:
     .asciz "help"
 
 help_text:
-    .asciz "COMMAND : FUNCTION\nhelp : displays a list of commands"
+    .asciz "COMMAND : FUNCTION\nhelp : displays a list of commands\necho <string> : prints the <string> to the terminal"
+
+echo_command:
+    .asciz "echo"
 
 .align 2
 commands:
     .word help_command
     .word do_help + 1
+    .word echo_command
+    .word do_echo + 1
 
     .word 0xDEADBEEF
 
@@ -33,6 +38,11 @@ commands:
 
 do_help:
     ldr r4, =help_text 
+    bl puts
+    b shell
+
+do_echo:
+    adds r4, #1
     bl puts
     b shell
 
@@ -170,7 +180,10 @@ execute:
     bl putc
 
     ldr r4, =0x20000000
+    b filter
 
+prepare_find:
+    ldr r4, =0x20000000
     ldr r5, =commands
 
 find_command:
@@ -190,6 +203,18 @@ find_command:
 continue:
     adds r5, #8           @ move to next command entry
     b find_command
+
+filter:
+    ldrb r1, [r4]
+    adds r4, #1
+    cmp r1, #0
+    beq prepare_find
+    cmp r1, #32
+    bne filter
+    subs r4, #1
+    movs r1, #0
+    strb r1, [r4]
+    b prepare_find
 
 command_not_found:
     movs r1, #39
