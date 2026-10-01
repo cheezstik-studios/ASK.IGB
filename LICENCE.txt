@@ -1,4 +1,4 @@
-Very Specific Homemade Public Licence (VSHPL)
+Cheezstik Public Licence (CPL)
 Version 1.2
 
 Copyright (C) 2026 Cheezstik Studios
