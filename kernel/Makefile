@@ -1,9 +1,8 @@
 DEFAULT_HOST!=../default-host.sh
 HOST?=$(DEFAULT_HOST)
 HOSTARCH!=../target-triplet-to-arch.sh $(HOST)
-OUTPUT_FORMAT := $(word 2,$(subst -, ,$(HOST)))
 
-CFLAGS?=-O2 -g
+CFLAGS?=-O2
 CPPFLAGS?=
 LDFLAGS?=
 LIBS?=
@@ -51,9 +50,9 @@ $(LIBS) \
 
 
 
-all: ../build/$(HOSTARCH).$(OUTPUT_FORMAT)
+all: ../build/$(HOSTARCH).elf
 
-../build/$(HOSTARCH).$(OUTPUT_FORMAT): $(OBJS) $(ARCHDIR)/linker.ld
+../build/$(HOSTARCH).elf: $(OBJS) $(ARCHDIR)/linker.ld
 	$(CC) -T $(ARCHDIR)/linker.ld -o $@ $(CFLAGS) $(LINK_LIST)
 
 $(ARCHDIR)/crtbegin.o $(ARCHDIR)/crtend.o:
@@ -69,7 +68,7 @@ $(ARCHDIR)/crtbegin.o $(ARCHDIR)/crtend.o:
 	$(CC) -c $< -o $@ $(CFLAGS) $(CPPFLAGS)
 
 clean:
-	rm -f ../build/$(HOSTARCH).$(OUTPUT_FORMAT)
+	rm -f ../build/$(HOSTARCH).elf
 	rm -f $(OBJS) *.o */*.o */*/*.o
 	rm -f $(OBJS:.o=.d) *.d */*.d */*/*.d
 
@@ -79,8 +78,8 @@ install-headers:
 	mkdir -p $(DESTDIR)$(INCLUDEDIR)
 	cp -R --preserve=timestamps include/. $(DESTDIR)$(INCLUDEDIR)/.
 
-install-kernel: ../build/$(HOSTARCH).$(OUTPUT_FORMAT)
+install-kernel: ../build/$(HOSTARCH).elf
 	mkdir -p $(DESTDIR)$(BOOTDIR)
-	cp ../build/$(HOSTARCH).$(OUTPUT_FORMAT) $(DESTDIR)$(BOOTDIR)
+	cp ../build/$(HOSTARCH).elf $(DESTDIR)$(BOOTDIR)
 
 -include $(OBJS:.o=.d)
